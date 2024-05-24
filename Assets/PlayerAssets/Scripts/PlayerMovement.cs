@@ -34,6 +34,10 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask whatIsPlayer;
     bool grounded;
 
+    [Header("Slope Check")]
+    public float maxSlopeAngle;
+    private RaycastHit slopeHit;
+
     public Transform orientation;
 
     float horizontalInput;
@@ -43,6 +47,7 @@ public class PlayerMovement : MonoBehaviour
     float currentWishDirVel;
 
     Vector3 wishDir;
+    Vector3 wishDirSlope;
     Vector3 wishDirMaxGroundVel;
     Vector3 wishDirMaxAirVel;
     Vector3 wishDirGroundAccel;
@@ -93,9 +98,9 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsGrounded()
     {
-        bool groundCheck = Physics.BoxCast(transform.position, transform.localScale * 0.5f, Vector3.down, transform.rotation, playerHeight * 0.251f, whatIsGround);
+        bool groundCheck = Physics.BoxCast(transform.position, transform.localScale * 0.5f, Vector3.down, out slopeHit, transform.rotation, playerHeight * 0.251f, whatIsGround);
 
-        if (groundCheck && rb.velocity.y < jumpForce)
+        if (groundCheck && rb.velocity.y < jumpForce && Vector3.Angle(Vector3.up, slopeHit.normal) < maxSlopeAngle)
             grounded = true;
         else
             grounded = false;
@@ -139,11 +144,11 @@ public class PlayerMovement : MonoBehaviour
         currentWishDirVel = Vector3.Dot(wishDir, currentHorizontalVel);
 
         if (currentWishDirVel > groundMaxVelocity)
-            wishDirGroundAccel = wishDir * 0f;
+            wishDirGroundAccel = GetSlopeWishDir() * 0f;
         else if (currentWishDirVel + groundAcceleration > groundMaxVelocity)
-            wishDirGroundAccel = wishDir * (groundMaxVelocity - currentWishDirVel);
+            wishDirGroundAccel = GetSlopeWishDir() * (groundMaxVelocity - currentWishDirVel);
         else
-            wishDirGroundAccel = wishDir * groundAcceleration;
+            wishDirGroundAccel = GetSlopeWishDir() * groundAcceleration;
 
         if (currentWishDirVel > airMaxVelocity)
             wishDirAirAccel = wishDir * 0f;
@@ -164,5 +169,11 @@ public class PlayerMovement : MonoBehaviour
     private void Jump()
     {
         rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+    }
+
+    private Vector3 GetSlopeWishDir()
+    {
+        wishDirSlope = Vector3.ProjectOnPlane(wishDir, slopeHit.normal).normalized;
+        return wishDirSlope;
     }
 }

@@ -145,17 +145,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleFriction()
     {
-        // if (grounded)
-        //     rb.drag = groundFriction;
-        // else
-        //     rb.drag = airFriction;
-
         Vector3 currentHorizontalVelSlope = Vector3.ProjectOnPlane(currentHorizontalVel, slopeHit.normal);
-
+        
         if (grounded && currentHorizontalVelSlope.magnitude - groundFriction > 0f)
             rb.velocity -= currentHorizontalVelSlope.normalized * groundFriction;
         else if (grounded && currentHorizontalVelSlope.magnitude - groundFriction < 0f)
             rb.velocity -= currentHorizontalVelSlope;
+
+        if (grounded && currentHorizontalVelSlope.magnitude > groundMaxVelocity)
+            rb.velocity -= currentHorizontalVelSlope.normalized * (currentHorizontalVelSlope.magnitude - groundMaxVelocity);
 
         if (!grounded && currentHorizontalVelSlope.magnitude - airFriction > 0f)
             rb.velocity -= currentHorizontalVelSlope.normalized * airFriction;

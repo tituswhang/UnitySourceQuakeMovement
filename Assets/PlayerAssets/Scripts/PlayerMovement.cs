@@ -71,29 +71,19 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log("horizontal vel: " + currentHorizontalVel.magnitude + "\nvertical vel: " + rb.velocity.y);
         // Debug.Log("grounded: " + grounded);
 
+        IsGrounded();
+
         MyInput();
 
-        IsGrounded();
+        WishDir();
+
+        MovePlayer();
 
         HandleFriction();
 
         HandleGravity();
 
         GetHorizontalVelocity();
-
-        WishDir();
-
-        MovePlayer();
-    }
-
-    private void MyInput()
-    {
-        // get movement keys
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
-        
-        if (Input.GetKey(jumpKey) && grounded)
-            Jump();
     }
 
     private bool IsGrounded()
@@ -108,32 +98,19 @@ public class PlayerMovement : MonoBehaviour
         return grounded;
     }
 
-    private void HandleFriction()
+    private void MyInput()
     {
-        if (grounded)
-            rb.drag = groundFriction;
-        else
-            rb.drag = airFriction;
-    }
+        // get movement keys
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
 
-    private void HandleGravity()
-    {
-        if (grounded)
-            rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, rb.velocity.z);
-        else
-            rb.velocity -= new Vector3(0f, gravity, 0f);
-    }
-
-    private Vector3 GetHorizontalVelocity()
-    {
-        currentHorizontalVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-        if (currentHorizontalVel.magnitude < 0.01f)
-            rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
-        return currentHorizontalVel;
+        if (Input.GetKey(jumpKey) && grounded)
+            Jump();
     }
 
     private void WishDir()
     {
+        GetSlopeWishDir();
         // movement direction
         wishDir = (orientation.forward * verticalInput + orientation.right * horizontalInput).normalized;
 
@@ -144,11 +121,11 @@ public class PlayerMovement : MonoBehaviour
         currentWishDirVel = Vector3.Dot(wishDir, currentHorizontalVel);
 
         if (currentWishDirVel > groundMaxVelocity)
-            wishDirGroundAccel = GetSlopeWishDir() * 0f;
+            wishDirGroundAccel = wishDirSlope * 0f;
         else if (currentWishDirVel + groundAcceleration > groundMaxVelocity)
-            wishDirGroundAccel = GetSlopeWishDir() * (groundMaxVelocity - currentWishDirVel);
+            wishDirGroundAccel = wishDirSlope * (groundMaxVelocity - currentWishDirVel);
         else
-            wishDirGroundAccel = GetSlopeWishDir() * groundAcceleration;
+            wishDirGroundAccel = wishDirSlope * groundAcceleration;
 
         if (currentWishDirVel > airMaxVelocity)
             wishDirAirAccel = wishDir * 0f;
@@ -164,6 +141,40 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity += wishDirGroundAccel;
         else
             rb.velocity += wishDirAirAccel;
+    }
+
+    private void HandleFriction()
+    {
+        // if (grounded)
+        //     rb.drag = groundFriction;
+        // else
+        //     rb.drag = airFriction;
+
+        Vector3 currentHorizontalVelSlope = Vector3.ProjectOnPlane(currentHorizontalVel, slopeHit.normal);
+
+        if (grounded && currentHorizontalVelSlope.magnitude - groundFriction > 0f)
+            rb.velocity -= currentHorizontalVelSlope.normalized * groundFriction;
+        else if (grounded && currentHorizontalVelSlope.magnitude - groundFriction < 0f)
+            rb.velocity -= currentHorizontalVelSlope;
+
+        if (!grounded && currentHorizontalVelSlope.magnitude - airFriction > 0f)
+            rb.velocity -= currentHorizontalVelSlope.normalized * airFriction;
+        else if (!grounded && currentHorizontalVelSlope.magnitude - airFriction < 0f)
+            rb.velocity -= currentHorizontalVelSlope;
+    }
+
+    private void HandleGravity()
+    {
+        if (grounded)
+            rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, rb.velocity.z);
+        else
+            rb.velocity -= new Vector3(0f, gravity, 0f);
+    }
+
+    private Vector3 GetHorizontalVelocity()
+    {
+        currentHorizontalVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        return currentHorizontalVel;
     }
 
     private void Jump()

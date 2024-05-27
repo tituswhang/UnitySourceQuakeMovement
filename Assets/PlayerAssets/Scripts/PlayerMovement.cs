@@ -59,11 +59,13 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+        groundMaxVelocity += groundMaxVelocity * groundFriction;
+        airMaxVelocity += airMaxVelocity * airFriction;
     }
 
     private void Update()
     {
-        // MyInput();
+        MyInput();
     }
 
     private void FixedUpdate()
@@ -73,7 +75,7 @@ public class PlayerMovement : MonoBehaviour
 
         IsGrounded();
 
-        MyInput();
+        // MyInput();
 
         WishDir();
 
@@ -147,18 +149,14 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 currentHorizontalVelSlope = Vector3.ProjectOnPlane(currentHorizontalVel, slopeHit.normal);
         
-        if (grounded && currentHorizontalVelSlope.magnitude - groundFriction > 0f)
-            rb.velocity -= currentHorizontalVelSlope.normalized * groundFriction;
-        else if (grounded && currentHorizontalVelSlope.magnitude - groundFriction < 0f)
+        if (grounded && currentHorizontalVelSlope.magnitude < groundMaxVelocity * groundFriction)
             rb.velocity -= currentHorizontalVelSlope;
-
-        if (grounded && currentHorizontalVelSlope.magnitude > groundMaxVelocity)
-            rb.velocity -= currentHorizontalVelSlope.normalized * (currentHorizontalVelSlope.magnitude - groundMaxVelocity);
-
-        if (!grounded && currentHorizontalVelSlope.magnitude - airFriction > 0f)
-            rb.velocity -= currentHorizontalVelSlope.normalized * airFriction;
-        else if (!grounded && currentHorizontalVelSlope.magnitude - airFriction < 0f)
+        else if (grounded)
+            rb.velocity -= currentHorizontalVelSlope * groundFriction;
+        else if (!grounded && currentHorizontalVelSlope.magnitude < airMaxVelocity * airFriction)
             rb.velocity -= currentHorizontalVelSlope;
+        else
+            rb.velocity -= currentHorizontalVelSlope * airFriction;
     }
 
     private void HandleGravity()

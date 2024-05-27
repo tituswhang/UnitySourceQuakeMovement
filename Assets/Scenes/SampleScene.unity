@@ -1489,14 +1489,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 1909493627593555136, guid: 02e69e5505d735a4abd17cb2702430d8, type: 3}
-      propertyPath: groundFriction
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1909493627593555136, guid: 02e69e5505d735a4abd17cb2702430d8, type: 3}
-      propertyPath: groundAcceleration
-      value: 1.5
-      objectReference: {fileID: 0}
     - target: {fileID: 7365590118535460969, guid: 02e69e5505d735a4abd17cb2702430d8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

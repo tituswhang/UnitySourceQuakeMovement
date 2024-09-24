@@ -289,18 +289,21 @@ MonoBehaviour:
   airMinVelocity: 0
   airFriction: 0
   gravity: 0.5
-  jumpForce: 8
+  jumpForce: 7.5
   jumpKey: 32
   strafeForwardKey: 119
   strafeLeftKey: 97
   strafeBackwardKey: 115
   strafeRightKey: 100
   playerHeight: 2
-  maxVerticalVelocityToBeAirborne: 8
+  maxVerticalVelocityToBeAirborne: 7.5
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
   grounded: 0
+  maxDistanceFromGroundToBeGrounded: 0.1
+  addUpwardVerticalMomentumOnJump: 0
+  addDownwardVerticalMomentumOnJump: 0
   maxSlopeAngle: 40
   orientation: {fileID: 5233525419211424266}
 --- !u!65 &7310778740640684292

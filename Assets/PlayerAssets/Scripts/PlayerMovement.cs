@@ -30,49 +30,44 @@ public class PlayerMovement : MonoBehaviour
     public float playerHeight = 2.0f;
     public float maxVerticalVelocityToBeAirborne = 8.0f;    // The maximum vertical velocity allowed before the player is considered airborne.
     public LayerMask whatIsGround;
-    public float maxDistanceFromGroundToBeGrounded = 0.1f;  // The maximum distance distance allowed from ground to be considered _grounded.
+    public bool grounded = false;
     public bool addUpwardVerticalMomentumOnJump = false;    // Should the jump velocity be affected by the player's current upward momentum? (Not implemented yet)
     public bool addDownwardVerticalMomentumOnJump = false;  // Should the jump velocity be affected by the player's current downward momentum? (Not implemented yet)
 
-    private bool _grounded = false;
 
     [Header("Slope Check")]
     public float maxSlopeAngle = 40.0f;                     // The maximum angle allowed before the player is considered airborne.
-    private Vector3 contactPoint;                            // Structure used to get info back from the boxCast in IsGround().
-
     public Transform orientation;                           // Orientation of the camera/player model.
+
+    private RaycastHit _slopeHit;                            // Structure used to get info back from the boxCast in IsGround().
 
     private float _horizontalInput;                          // left = -1, right = 1.
     private float _verticalInput;                            // down = -1, up = 1.
 
     private Vector3 _wishDir;                                // The direction the player wants to go (and normal to the slope if there is one).
-    private Vector3 _wishDirGroundAccel;                     // The ground acceleration in the wishDir direction.
-    private Vector3 _wishDirAirAccel;                        // The air acceleration in the wishDir direction.
+    private Vector3 _wishDirGroundAccel;                     // The ground acceleration in the _wishDir direction.
+    private Vector3 _wishDirAirAccel;                        // The air acceleration in the _wishDir direction.
 
-    private float _currentWishDirVel;                        // Current velocity in the WishDir direction.
+    private float currentWishDirVel;                        // Current velocity in the WishDir direction.
 
     Rigidbody rb;
-
-    private void Awake()
-    {
-        groundMaxVelocity += groundMaxVelocity * groundFriction;
-        airMaxVelocity += airMaxVelocity * airFriction;
-        _grounded = false;
-        _jumpKey = jumpKey;
-        Physics.defaultContactOffset = maxDistanceFromGroundToBeGrounded;
-    }
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+        groundMaxVelocity += groundMaxVelocity * groundFriction;
+        airMaxVelocity += airMaxVelocity * airFriction;
+        _jumpKey = jumpKey;
     }
 
     private void FixedUpdate()
     {
-        Debug.Log("Velocity\t\t: " + rb.velocity.magnitude + "\n\nWishDir Velocity\t: " + _currentWishDirVel +
+        Debug.Log("Velocity\t\t: " + rb.velocity.magnitude + "\n\nWishDir Velocity\t: " + currentWishDirVel +
             "\n\nHorizontal Velocity\t: " + new Vector3(rb.velocity.x, 0.0f, rb.velocity.z).magnitude +
             "\n\nVertical Velocity\t: " + new Vector3(0.0f, rb.velocity.y, 0.0f).magnitude);
+
+        IsGrounded();
 
         MyInput();
 
@@ -95,57 +90,27 @@ public class PlayerMovement : MonoBehaviour
         MovePlayer();
     }
 
-    // Player in contact with object. Enable _grounded if collided object was part of IsGround LayerMask.
-    private void OnCollisionStay(Collision collision)
+    private bool IsGrounded()
     {
-        if (IsGround(collision.gameObject) && rb.velocity.y < maxVerticalVelocityToBeAirborne && !Input.GetKey(jumpKey))
-        {
-            // Get the bottom of the player's collider in the world space.
-            float colliderBottom = GetComponent<Collider>().bounds.min.y;
+        // Perform a box check from the bottom of the player that is 25.5% the height of the player.
+        // Determine if the collided object is a ground and report collision info to slopeHit.
+        bool groundCheck = Physics.BoxCast(transform.position, transform.localScale * 0.5f, Vector3.down, out _slopeHit, transform.rotation, playerHeight * 0.255f, whatIsGround);
 
-            foreach (var contact in collision.contacts)
-            {
-                // Contact point is assumed to be a wall.
-                if (Vector3.Angle(Vector3.up, contact.normal) >= 90.0f)
-                    continue;
-                
-                // Check slope angle and the distance between the contact point and the bottom of the player's collider.
-                if (Vector3.Angle(Vector3.up, contact.normal) < maxSlopeAngle && colliderBottom - contact.point.y <= maxDistanceFromGroundToBeGrounded)
-                {
-                    contactPoint = contact.normal;
-                    _grounded = true;
-                    jumpKey = _jumpKey;
-                    return;
-                }
-            }
+        if (_slopeHit.normal == new Vector3(0.0f, 0.0f, 0.0f))
+            _slopeHit.normal = new Vector3(0.0f, 1.0f, 0.0f);
+
+        // Player is considered grounded if their velocity is below maxVerticalVelocityToBeAirborne(the maximum vertical velocity allowed before the player is considered airborne),
+        // touching a ground(groundCheck), and the ground has an angle less than maxSlopeAngle.
+        if (rb.velocity.y < maxVerticalVelocityToBeAirborne && groundCheck && Vector3.Angle(Vector3.up, _slopeHit.normal) < maxSlopeAngle)
+            grounded = true;
+        else
+        {
+            grounded = false;
+            jumpKey = _jumpKey;
         }
 
-        // If none of the contacts are _grounded or the player is still in motion vertically.
-        if (rb.velocity.y != 0.0f)
-        {
-            _grounded = false;
-            jumpKey = KeyCode.None;
-        }
+        return grounded;
     }
-
-
-    // Player lost contact with object. Disable _grounded if collided object was part of IsGround LayerMask.
-    private void OnCollisionExit(Collision collision)
-    {
-        if (IsGround(collision.gameObject))
-        {
-            jumpKey = KeyCode.None;
-            contactPoint = new Vector3(0.0f, 1.0f, 0.0f);
-            _grounded = false;
-        }
-    }
-
-    // Helper function to check if the collided object is part of whatIsGround
-    private bool IsGround(GameObject obj)
-    {
-        return (whatIsGround.value & (1 << obj.layer)) != 0;
-    }
-
 
     private void MyInput()
     {
@@ -153,7 +118,7 @@ public class PlayerMovement : MonoBehaviour
         _horizontalInput = Input.GetAxisRaw("Horizontal");
         _verticalInput = Input.GetAxisRaw("Vertical");
 
-        if (Input.GetKey(jumpKey) && _grounded)
+        if (Input.GetKey(jumpKey) && grounded)
             Jump();
     }
 
@@ -170,49 +135,50 @@ public class PlayerMovement : MonoBehaviour
             finalJumpForce += rb.velocity.y;
 
         rb.velocity = new Vector3(rb.velocity.x, finalJumpForce, rb.velocity.z);
-        _grounded = false;
+
+        jumpKey = KeyCode.None;
     }
 
     // Get the direction the player wants to go (and normal to the slope if there is one).
     private Vector3 GetWishDir()
     {
-        return _wishDir = Vector3.Cross(contactPoint, orientation.forward * _horizontalInput - orientation.right * _verticalInput).normalized;
+        return _wishDir = Vector3.Cross(_slopeHit.normal, orientation.forward * _horizontalInput - orientation.right * _verticalInput).normalized;
     }
 
     // Get the current velocity in the WishDir direction.
     private float GetCurrentWishDirVel()
     {
-        return _currentWishDirVel = Vector3.Dot(_wishDir, rb.velocity);
+        return currentWishDirVel = Vector3.Dot(_wishDir, rb.velocity);
     }
 
     private void HandleGroundAccel()
     {
-        // The player is moving faster than their groundMaxVelocity in the wishDir direction. Do not apply wishDirGroundAccel.
-        if (_currentWishDirVel > groundMaxVelocity)
+        // The player is moving faster than their groundMaxVelocity in the _wishDir direction. Do not apply _wishDirGroundAccel.
+        if (currentWishDirVel > groundMaxVelocity)
             _wishDirGroundAccel = _wishDir * 0f;
 
-        // The player's velocity in the wishDir direction will be greater than groundMaxVelocity in the next physics update.
-        // Only apply enough acceleration in the wishDir direction to reach groundMaxVelocity.
-        else if (_currentWishDirVel + groundAcceleration > groundMaxVelocity)
-            _wishDirGroundAccel = _wishDir * (groundMaxVelocity - _currentWishDirVel);
+        // The player's velocity in the _wishDir direction will be greater than groundMaxVelocity in the next physics update.
+        // Only apply enough acceleration in the _wishDir direction to reach groundMaxVelocity.
+        else if (currentWishDirVel + groundAcceleration > groundMaxVelocity)
+            _wishDirGroundAccel = _wishDir * (groundMaxVelocity - currentWishDirVel);
 
-        // Just apply normal groundAcceleration in the wishDir direction.
+        // Just apply normal groundAcceleration in the _wishDir direction.
         else
             _wishDirGroundAccel = _wishDir * groundAcceleration;
     }
 
     private void HandleAirAccel()
     {
-        // The player is moving faster than their airMaxVelocity in the wishDir direction. Do not apply wishDirAirAccel.
-        if (_currentWishDirVel > airMaxVelocity)
+        // The player is moving faster than their airMaxVelocity in the _wishDir direction. Do not apply _wishDirAirAccel.
+        if (currentWishDirVel > airMaxVelocity)
             _wishDirAirAccel = _wishDir * 0f;
 
-        // The player's velocity in the wishDir direction will be greater than airMaxVelocity in the next physics update.
-        // Only apply enough acceleration in the wishDir direction to reach airMaxVelocity.
-        else if (_currentWishDirVel + airAcceleration > airMaxVelocity)
-            _wishDirAirAccel = _wishDir * (airMaxVelocity - _currentWishDirVel);
+        // The player's velocity in the _wishDir direction will be greater than airMaxVelocity in the next physics update.
+        // Only apply enough acceleration in the _wishDir direction to reach airMaxVelocity.
+        else if (currentWishDirVel + airAcceleration > airMaxVelocity)
+            _wishDirAirAccel = _wishDir * (airMaxVelocity - currentWishDirVel);
 
-        // Just apply normal airAcceleration in the wishDir direction.
+        // Just apply normal airAcceleration in the _wishDir direction.
         else
             _wishDirAirAccel = _wishDir * airAcceleration;
     }
@@ -221,11 +187,11 @@ public class PlayerMovement : MonoBehaviour
     {
         // The player's velocity is less than groundMinVelocity(the minimum velocity on the ground allowed before velocity gets set to 0).
         // Just zero-out the velocity.
-        if (_grounded && rb.velocity.magnitude < groundMinVelocity)
+        if (grounded && rb.velocity.magnitude < groundMinVelocity)
             rb.velocity -= rb.velocity;
 
         // Just apply normal groundFriction.
-        else if (_grounded)
+        else if (grounded)
             rb.velocity -= rb.velocity * groundFriction;
     }
 
@@ -233,23 +199,23 @@ public class PlayerMovement : MonoBehaviour
     {
         // The player's horizontal velocity is less than airMinVelocity(the minimum velocity in the air allowed before horizontal velocity gets set to 0).
         // Just zero-out the horizontal velocity.
-        if (!_grounded && new Vector3(rb.velocity.x, 0.0f, rb.velocity.z).magnitude < airMinVelocity)
+        if (!grounded && new Vector3(rb.velocity.x, 0.0f, rb.velocity.z).magnitude < airMinVelocity)
             rb.velocity -= new Vector3(rb.velocity.x, 0.0f, rb.velocity.z);
 
         // Just apply normal airFriction on the horizontal axes.
-        else if (!_grounded)
+        else if (!grounded)
             rb.velocity -= new Vector3(rb.velocity.x * airFriction, 0.0f, rb.velocity.z * airFriction);
     }
 
     private void HandleGravity()
     {
-        if (!_grounded)
+        if (!grounded)
             rb.velocity -= new Vector3(0f, gravity, 0f);
     }
 
     private void MovePlayer()
     {
-        if (_grounded)
+        if (grounded)
             rb.velocity += _wishDirGroundAccel;
         else
             rb.velocity += _wishDirAirAccel;

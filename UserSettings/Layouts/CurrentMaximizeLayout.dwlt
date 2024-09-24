@@ -493,9 +493,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 0, y: 0.6999998, z: 0}
+    m_Target: {x: -13.027675, y: -2.8596213, z: 24.689127}
     speed: 2
-    m_Value: {x: 0, y: 0.6999998, z: 0}
+    m_Value: {x: -13.027675, y: -2.8596213, z: 24.689127}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -541,9 +541,9 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.13750277, y: -0.82481515, z: 0.22723626, w: 0.49925315}
+    m_Target: {x: 0.07482549, y: -0.7317751, z: 0.08143303, w: 0.6726085}
     speed: 2
-    m_Value: {x: -0.13749473, y: 0.8247669, z: -0.22722295, w: -0.49922395}
+    m_Value: {x: -0.07482549, y: 0.7317751, z: -0.08143303, w: -0.6726085}
   m_Size:
     m_Target: 12.124355
     speed: 2
@@ -661,8 +661,8 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 06f6ffff
-      m_LastClickedID: -2554
+      m_SelectedIDs: 0a5a0000
+      m_LastClickedID: 23050
       m_ExpandedIDs: 30fbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
@@ -774,9 +774,9 @@ MonoBehaviour:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 6a5a0000
-    m_LastClickedID: 23146
-    m_ExpandedIDs: 000000005e5a000000ca9a3b
+    m_SelectedIDs: 705a0000
+    m_LastClickedID: 23152
+    m_ExpandedIDs: 000000006a5a000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -804,7 +804,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000005e5a000000ca9a3b
+    m_ExpandedIDs: 000000006a5a000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -829,8 +829,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 06f6ffff
-    m_LastClickedInstanceID: -2554
+    m_SelectedInstanceIDs: 0a5a0000
+    m_LastClickedInstanceID: 23050
     m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs: 
     m_RenameOverlay:
@@ -961,7 +961,7 @@ MonoBehaviour:
     m_ControlHash: -371814159
     m_PrefName: Preview_InspectorPreview
   m_LastInspectedObjectInstanceID: -1
-  m_LastVerticalScrollValue: 378
+  m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0
   m_LockTracker:

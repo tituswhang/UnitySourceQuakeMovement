@@ -95,6 +95,7 @@ public class PlayerMovement : MonoBehaviour
         foreach (ContactPoint c in collision.contacts)
         {
             if (Vector3.Angle(Vector3.up, c.normal) <= maxSlopeAngle && colliderBottom - c.point.y <= maxDistanceFromGroundToBeGrounded)
+
             {
                 grounded = true;
                 _slopeHit.normal = c.normal;   // preserve slope info for wish‑dir math

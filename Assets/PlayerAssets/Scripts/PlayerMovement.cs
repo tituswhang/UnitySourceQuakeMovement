@@ -28,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Ground Check")]
     public float playerHeight = 2.0f;
     public float maxVerticalVelocityToBeAirborne = 8.0f;
+    public float maxDistanceFromGroundToBeGrounded = 0.1f;
     public LayerMask whatIsGround;
     public bool grounded = false;
     public bool addUpwardVerticalMomentumOnJump = false;
@@ -62,8 +63,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        Vector3 horizontalVelocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
         // debug
         Debug.Log($"Velocity: {rb.velocity.magnitude}");
+        //Debug.Log($"Velocity: {horizontalVelocity.magnitude}");
 
         MyInput();
 
@@ -71,8 +74,8 @@ public class PlayerMovement : MonoBehaviour
         GetCurrentWishDirVel();
 
         HandleGroundAccel();
-        HandleAirAccel();
         HandleGroundFriction();
+        HandleAirAccel();
         HandleAirFriction();
         HandleGravity();
 
@@ -85,10 +88,14 @@ public class PlayerMovement : MonoBehaviour
         if ((whatIsGround.value & (1 << collision.gameObject.layer)) == 0 || rb.velocity.y > maxVerticalVelocityToBeAirborne)
             return;
 
+        // Get the bottom of the player's collider in the world space.
+        float colliderBottom = GetComponent<Collider>().bounds.min.y;
+
         // Look for at least one contact whose normal is shallow enough to stand on.
         foreach (ContactPoint c in collision.contacts)
         {
-            if (Vector3.Angle(Vector3.up, c.normal) <= maxSlopeAngle)
+            if (Vector3.Angle(Vector3.up, c.normal) <= maxSlopeAngle && colliderBottom - c.point.y <= maxDistanceFromGroundToBeGrounded)
+
             {
                 grounded = true;
                 _slopeHit.normal = c.normal;   // preserve slope info for wish‑dir math
@@ -118,6 +125,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void Jump()
     {
+        if (_wishDir.magnitude < 1)
+            HandleGroundFriction();
+
         float finalJumpForce = jumpForce;
 
         if (addUpwardVerticalMomentumOnJump && rb.velocity.y > 0) finalJumpForce += rb.velocity.y;
@@ -138,7 +148,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleGroundAccel()
     {
-        if (currentWishDirVel > groundMaxVelocity)
+        if (currentWishDirVel > groundMaxVelocity || _wishDir.magnitude < 1)
             _wishDirGroundAccel = Vector3.zero;
         else if (currentWishDirVel + groundAcceleration > groundMaxVelocity)
             _wishDirGroundAccel = _wishDir * (groundMaxVelocity - currentWishDirVel);
@@ -146,9 +156,20 @@ public class PlayerMovement : MonoBehaviour
             _wishDirGroundAccel = _wishDir * groundAcceleration;
     }
 
+    private void HandleGroundFriction()
+    {
+        if (!grounded)
+            return;
+
+        if (rb.velocity.magnitude < groundMinVelocity && _wishDir.magnitude < 1)
+            rb.velocity = Vector3.zero;
+        else
+            rb.velocity -= rb.velocity * groundFriction;
+    }
+
     private void HandleAirAccel()
     {
-        if (currentWishDirVel > airMaxVelocity)
+        if (currentWishDirVel > airMaxVelocity || _wishDir.magnitude < 1)
             _wishDirAirAccel = Vector3.zero;
         else if (currentWishDirVel + airAcceleration > airMaxVelocity)
             _wishDirAirAccel = _wishDir * (airMaxVelocity - currentWishDirVel);
@@ -156,21 +177,16 @@ public class PlayerMovement : MonoBehaviour
             _wishDirAirAccel = _wishDir * airAcceleration;
     }
 
-    private void HandleGroundFriction()
-    {
-        if (grounded && rb.velocity.magnitude < groundMinVelocity)
-            rb.velocity = Vector3.zero;
-        else if (grounded)
-            rb.velocity -= rb.velocity * groundFriction;
-    }
-
     private void HandleAirFriction()
     {
+        if (grounded)
+            return;
+
         Vector3 horizontalVelocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
 
-        if (!grounded && horizontalVelocity.magnitude < airMinVelocity)
+        if (horizontalVelocity.magnitude < airMinVelocity && _wishDir.magnitude < 1)
             rb.velocity -= horizontalVelocity;
-        else if (!grounded)
+        else
             rb.velocity -= new Vector3(horizontalVelocity.x * airFriction, 0, horizontalVelocity.z * airFriction);
     }
 

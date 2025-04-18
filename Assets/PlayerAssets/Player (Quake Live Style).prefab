@@ -62,7 +62,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 112
-  m_CollisionDetection: 1
+  m_CollisionDetection: 2
 --- !u!114 &4960666100994290871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
   groundMaxVelocity: 10
   groundMinVelocity: 0.5
   groundFriction: 0.1
-  airAcceleration: 0.1
+  airAcceleration: 0.15
   airMaxVelocity: 15
   airMinVelocity: 0
   airFriction: 0
@@ -92,11 +92,11 @@ MonoBehaviour:
   strafeRightKey: 100
   playerHeight: 2
   maxVerticalVelocityToBeAirborne: 9999
+  maxDistanceFromGroundToBeGrounded: 0.1
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
   grounded: 0
-  maxDistanceFromGroundToBeGrounded: 0.1
   addUpwardVerticalMomentumOnJump: 1
   addDownwardVerticalMomentumOnJump: 0
   maxSlopeAngle: 44

@@ -125,7 +125,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Jump()
     {
-        if (_wishDir.magnitude < 1)
+        if (_wishDir.magnitude < 0.5f)
             HandleGroundFriction();
 
         float finalJumpForce = jumpForce;
@@ -148,7 +148,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleGroundAccel()
     {
-        if (currentWishDirVel > groundMaxVelocity || _wishDir.magnitude < 1)
+        if (currentWishDirVel > groundMaxVelocity || _wishDir.magnitude < 0.5f)
             _wishDirGroundAccel = Vector3.zero;
         else if (currentWishDirVel + groundAcceleration > groundMaxVelocity)
             _wishDirGroundAccel = _wishDir * (groundMaxVelocity - currentWishDirVel);
@@ -161,7 +161,7 @@ public class PlayerMovement : MonoBehaviour
         if (!grounded)
             return;
 
-        if (rb.velocity.magnitude < groundMinVelocity && _wishDir.magnitude < 1)
+        if (rb.velocity.magnitude < groundMinVelocity && _wishDir.magnitude < 0.5f)
             rb.velocity = Vector3.zero;
         else
             rb.velocity -= rb.velocity * groundFriction;
@@ -169,7 +169,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleAirAccel()
     {
-        if (currentWishDirVel > airMaxVelocity || _wishDir.magnitude < 1)
+        if (currentWishDirVel > airMaxVelocity || _wishDir.magnitude < 0.5f)
             _wishDirAirAccel = Vector3.zero;
         else if (currentWishDirVel + airAcceleration > airMaxVelocity)
             _wishDirAirAccel = _wishDir * (airMaxVelocity - currentWishDirVel);
@@ -184,7 +184,7 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 horizontalVelocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
 
-        if (horizontalVelocity.magnitude < airMinVelocity && _wishDir.magnitude < 1)
+        if (horizontalVelocity.magnitude < airMinVelocity && _wishDir.magnitude < 0.5f)
             rb.velocity -= horizontalVelocity;
         else
             rb.velocity -= new Vector3(horizontalVelocity.x * airFriction, 0, horizontalVelocity.z * airFriction);

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
@@ -33,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     public bool grounded = false;
     public bool addUpwardVerticalMomentumOnJump = false;
     public bool addDownwardVerticalMomentumOnJump = false;
+    public float skin = 0.05f;
 
     [Header("Slope Check")]
     public float maxSlopeAngle = 40.0f;
@@ -49,11 +51,14 @@ public class PlayerMovement : MonoBehaviour
     private float currentWishDirVel;
     private KeyCode _jumpKey;
     private Rigidbody rb;
+    private BoxCollider box;
     #region Unity Lifecycle
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+
+        box = GetComponent<BoxCollider>();
 
         groundMaxVelocity += groundMaxVelocity * groundFriction;
         airMaxVelocity += airMaxVelocity * airFriction;
@@ -63,6 +68,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        ResolveOverlaps();
+
         Vector3 horizontalVelocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
         // debug
         Debug.Log($"Velocity: {rb.velocity.magnitude}");
@@ -82,8 +89,33 @@ public class PlayerMovement : MonoBehaviour
         MovePlayer();
     }
     #endregion
+    private void ResolveOverlaps()
+    {
+        // Only check ground
+        Collider[] overlaps = Physics.OverlapBox(
+            box.bounds.center,
+            box.bounds.extents + Vector3.one * skin,
+            transform.rotation,
+            whatIsGround,
+            QueryTriggerInteraction.Ignore);
+
+        foreach (var col in overlaps)
+        {
+            if (col == box) continue;
+            if (Physics.ComputePenetration(
+                    box, rb.position, transform.rotation,
+                    col, col.transform.position, col.transform.rotation,
+                    out Vector3 dir, out float dist))
+            {
+                rb.MovePosition(rb.position + dir * dist);
+            }
+        }
+    }
+
     private void OnCollisionStay(Collision collision)
     {
+        ResolveOverlaps();
+
         // Is this collider in the ground layer‑mask?
         if ((whatIsGround.value & (1 << collision.gameObject.layer)) == 0 || rb.velocity.y > maxVerticalVelocityToBeAirborne)
             return;

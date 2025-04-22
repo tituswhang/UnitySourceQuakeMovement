@@ -26,7 +26,7 @@ MonoBehaviour:
   m_MinSize: {x: 400, y: 100}
   m_MaxSize: {x: 32384, y: 16192}
   vertical: 0
-  controlID: 5127
+  controlID: 19698
 --- !u!114 &2
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -149,7 +149,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 5037
+  controlID: 19603
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -493,9 +493,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -14.996931, y: -10.599506, z: 7.804115}
+    m_Target: {x: -13.882302, y: -10.003763, z: -8.748877}
     speed: 2
-    m_Value: {x: -14.996931, y: -10.599506, z: 7.804115}
+    m_Value: {x: -13.882302, y: -10.003763, z: -8.748877}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -541,9 +541,9 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.26331708, y: 0.475814, z: -0.15182607, w: -0.82546616}
+    m_Target: {x: -0.1530596, y: 0.81711525, z: -0.25261617, w: -0.49525842}
     speed: 2
-    m_Value: {x: -0.26329336, y: 0.47577113, z: -0.15181239, w: -0.82539177}
+    m_Value: {x: -0.15304428, y: 0.8170334, z: -0.25259086, w: -0.49520883}
   m_Size:
     m_Target: 12.124355
     speed: 2
@@ -706,8 +706,8 @@ MonoBehaviour:
     y: 0
     width: 352.00006
     height: 827.3333
-  m_MinSize: {x: 230, y: 250}
-  m_MaxSize: {x: 10000, y: 10000}
+  m_MinSize: {x: 232, y: 271}
+  m_MaxSize: {x: 10002, y: 10021}
   m_ActualView: {fileID: 10}
   m_Panes:
   - {fileID: 10}
@@ -829,8 +829,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 4ef5ffff
-    m_LastClickedInstanceID: -2738
+    m_SelectedInstanceIDs: d2faffff
+    m_LastClickedInstanceID: -1326
     m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs: 
     m_RenameOverlay:
@@ -960,7 +960,7 @@ MonoBehaviour:
     m_CachedPref: -160
     m_ControlHash: -371814159
     m_PrefName: Preview_InspectorPreview
-  m_LastInspectedObjectInstanceID: -2738
+  m_LastInspectedObjectInstanceID: -1326
   m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0
